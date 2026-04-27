@@ -1,12 +1,34 @@
-.env
-.mysql
-.log
-**/node_modules/
-**/dist
+# Git
 .git
 .gitignore
-CHANGELOG.md
-docker-compose.test.yml
+
+# Documentation and Project Meta
 docs/
+CHANGELOG.md
 LICENSE
+COPYING.txt
 README.md
+PROJECT.md
+PROMPT.md
+
+# Build Context & Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Development & Test
+test/
+docker-compose.*.yml
+!docker-compose.yml
+.mysql/
+.cache/
+
+# Node modules & Build Outputs
+**/node_modules/
+**/dist/
+
+# Scripts
+*.sh

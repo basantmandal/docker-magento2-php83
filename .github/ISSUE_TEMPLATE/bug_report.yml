@@ -1,0 +1,80 @@
+name: 'Bug Report'
+description: 'Report a bug to help us improve the project.'
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: 'Thanks for taking the time to fill out this bug report!'
+  - type: input
+    id: system_version
+    attributes:
+      label: 'System Version (OS)'
+      description: 'What operating system are you using?'
+      placeholder: 'e.g., macOS 14.2, Ubuntu 22.04, Windows 11'
+    validations:
+      required: true
+  - type: input
+    id: docker_version
+    attributes:
+      label: 'Docker Version'
+      description: 'What version of Docker and Docker Compose are you running?'
+      placeholder: 'e.g., Docker v24.0.5, Compose v2.20.2'
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 'Environment'
+      description: 'Which environment does this bug affect?'
+      options:
+        - Local
+        - Development
+        - Staging
+        - Production
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 'Bug Description'
+      description: 'A clear and concise description of what the bug is.'
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: 'Steps to Reproduce'
+      description: 'Steps to reproduce the behavior.'
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: 'Expected Behavior'
+      description: 'A clear and concise description of what you expected to happen.'
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: 'Actual Behavior'
+      description: 'A clear and concise description of what actually happened.'
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 'Logs/Error Output'
+      description: 'Please copy and paste any relevant log output or error messages.'
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 'Screenshots'
+      description: 'If applicable, add screenshots to help explain your problem.'
