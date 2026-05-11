@@ -3,12 +3,12 @@ FROM php:8.3-fpm-bookworm
 LABEL org.opencontainers.image.title="HK2 Magento PHP 8.3 FPM" \
       org.opencontainers.image.description="PHP 8.3 FPM environment optimized for Magento 2" \
       org.opencontainers.image.source="https://github.com/basantmandal/docker-magento2-php83" \
-      org.opencontainers.image.version="2.0" \
+      org.opencontainers.image.version="2.1" \
       org.opencontainers.image.authors="Basant Mandal" \
       org.opencontainers.image.url="https://github.com/basantmandal/docker-magento2-php83" \
       org.opencontainers.image.documentation="https://github.com/basantmandal/docker-magento2-php83#readme" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.created="2026-04-27T00:00:00Z" \
+      org.opencontainers.image.created="2026-05-11T00:00:00Z" \
       org.opencontainers.image.revision="git-commit-sha"
 
 USER root
@@ -17,7 +17,7 @@ USER root
 # Environment Variables
 # -----------------------------
 ENV TZ=Asia/Kolkata \
-    PHP_MEMORY_LIMIT=2048M \
+    PHP_MEMORY_LIMIT=4096M \
     PHP_MAX_EXECUTION_TIME=60 \
     PHP_UPLOAD_MAX_FILESIZE=50M \
     PHP_POST_MAX_SIZE=50M
@@ -28,35 +28,33 @@ ARG INSTALL_XDEBUG=false
 # -----------------------------
 # System Dependencies
 # -----------------------------
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cron \
     curl \
     git \
     iputils-ping \
-    jpegoptim optipng pngquant gifsicle \
-    libbz2-dev \
-    libcurl4-openssl-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    libjpeg62-turbo-dev \
-    default-libmysqlclient-dev \
-    libpng-dev \
-    libsodium-dev \
-    libsqlite3-dev \
-    libwebp-dev \
-    libxml2-dev \
-    libxpm-dev \
-    libxslt1-dev \
-    libzip-dev \
+    unzip zip \
     locales \
+    msmtp \
     sendmail \
     sqlite3 \
-    unzip \
-    zip \
+    libonig-dev \
+    libicu-dev \
+    libzip-dev \
+    libxml2-dev \
+    libcurl4-openssl-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libwebp-dev \
+    libxpm-dev \
+    libxslt1-dev \
+    libbz2-dev \
+    libsqlite3-dev \
     zlib1g-dev \
-    msmtp \
-    && apt-get clean \
+    default-libmysqlclient-dev \
+    jpegoptim optipng pngquant gifsicle \
     && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------
@@ -67,22 +65,23 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # -----------------------------
 # PHP Extensions
 # -----------------------------
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    bcmath \
-    calendar \
-    curl \
-    exif \
-    gd \
-    intl \
-    mysqli \
-    opcache \
-    pdo_mysql \
-    pdo_sqlite \
-    soap \
-    sockets \
-    xsl \
-    zip
+RUN set -eux; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j1 \
+        bcmath \
+        calendar \
+        curl \
+        exif \
+        gd \
+        intl \
+        mysqli \
+        opcache \
+        pdo_mysql \
+        pdo_sqlite \
+        soap \
+        sockets \
+        xsl \
+        zip
 
 # -----------------------------
 # Redis Extension (PHP 8.3 compatible)
@@ -100,28 +99,50 @@ RUN if [ "$INSTALL_XDEBUG" = "true" ]; then \
 # -----------------------------
 # IonCube Loader (PHP 8.3)
 # -----------------------------
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "aarch64" ]; then \
-    curl -fsSL https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_aarch64.tar.gz -o /tmp/ioncube.tar.gz; \
+RUN set -eux; \
+    ARCH="$(uname -m)"; \
+    case "$ARCH" in \
+        aarch64|arm64) \
+            URL="https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_aarch64.tar.gz" ;; \
+        x86_64|amd64) \
+            URL="https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz" ;; \
+        *) \
+            echo "Unsupported architecture: $ARCH"; \
+            exit 1 ;; \
+    esac; \
+    \
+    curl -fsSL "$URL" -o /tmp/ioncube.tar.gz || exit 0; \
+    tar -xzf /tmp/ioncube.tar.gz -C /usr/local || exit 0; \
+    \
+    EXT_DIR="$(php-config --extension-dir)"; \
+    LOADER_FILE="$(find /usr/local/ioncube -name "ioncube_loader_lin_8.3.so" | head -n 1)"; \
+    \
+    if [ -f "$LOADER_FILE" ]; then \
+        cp "$LOADER_FILE" "$EXT_DIR/"; \
+        echo "zend_extension=${EXT_DIR}/ioncube_loader_lin_8.3.so" \
+            > /usr/local/etc/php/conf.d/00-ioncube.ini; \
+        php -m | grep -i ionCube; \
     else \
-    curl -fsSL https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz -o /tmp/ioncube.tar.gz; \
-    fi \
-    && tar xzf /tmp/ioncube.tar.gz -C /usr/local \
-    && echo "zend_extension=ioncube_loader_lin_${CUSTOM_PHP_VERSION}.so" \
-    > /usr/local/etc/php/conf.d/ioncube.ini \
-    && rm -rf /tmp/ioncube*
+        echo "IonCube loader not available for $ARCH"; \
+    fi; \
+    \
+    rm -rf /tmp/ioncube*
 
 # -----------------------------
 # PHP Configuration
 # -----------------------------
-RUN echo "memory_limit=${PHP_MEMORY_LIMIT}" > /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "upload_max_filesize=${PHP_UPLOAD_MAX_FILESIZE}" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "post_max_size=${PHP_POST_MAX_SIZE}" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "max_execution_time=${PHP_MAX_EXECUTION_TIME}" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "date.timezone=${TZ}" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/zz-custom.ini \
-    && echo "opcache.memory_consumption=512" >> /usr/local/etc/php/conf.d/zz-custom.ini
+RUN set -eux; \
+    mkdir -p /usr/local/etc/php/conf.d/defaults; \
+    { \
+      echo "memory_limit=${PHP_MEMORY_LIMIT}"; \
+      echo "upload_max_filesize=${PHP_UPLOAD_MAX_FILESIZE}"; \
+      echo "post_max_size=${PHP_POST_MAX_SIZE}"; \
+      echo "max_execution_time=${PHP_MAX_EXECUTION_TIME}"; \
+      echo "date.timezone=${TZ}"; \
+      echo "opcache.enable=1"; \
+      echo "opcache.validate_timestamps=0"; \
+      echo "opcache.memory_consumption=512"; \
+    } > /usr/local/etc/php/conf.d/10-default.ini
 
 # -----------------------------
 # MSMTP
@@ -146,14 +167,26 @@ ENV LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
 # -----------------------------
+# PHP-FPM Performance Tuning
+# -----------------------------
+RUN set -eux; \
+    { \
+      echo "[www]"; \
+      echo "pm = dynamic"; \
+      echo "pm.max_children = 20"; \
+      echo "pm.start_servers = 4"; \
+      echo "pm.min_spare_servers = 2"; \
+      echo "pm.max_spare_servers = 6"; \
+    } > /usr/local/etc/php-fpm.d/zz-performance.conf
+
+# -----------------------------
 # User Setup
 # -----------------------------
 ARG USER=docker
 
-RUN groupadd --gid 1000 ${USER} \
-    && useradd --uid 1000 --gid ${USER} --shell /bin/bash --create-home ${USER}
-
-RUN chown -R ${USER}:www-data /var/www/html
+RUN groupadd -g 1000 ${USER} \
+    && useradd -m -u 1000 -g ${USER} -s /bin/bash ${USER} \
+    && chown -R ${USER}:www-data /var/www
 
 USER ${USER}
 
