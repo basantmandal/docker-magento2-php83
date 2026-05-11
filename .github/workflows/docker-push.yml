@@ -2,8 +2,8 @@ name: Build & Push Multi-Arch Docker Image
 
 on:
   push:
-    branches: ['main']
-    tags: ['v*']
+    branches: ["main"]
+    tags: ["[0-9]*"]
 
 jobs:
   docker:
@@ -36,18 +36,19 @@ jobs:
         with:
           images: basantmandal/hk2-php8.3-fpm
           tags: |
-            type=ref,event=branch
             type=ref,event=tag
-            type=raw,value=latest
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
 
       # 6. Build + Push (MULTI-ARCH)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
+        continue-on-error: false
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=php83
+          cache-to: type=gha,mode=max,scope=php83
