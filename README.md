@@ -1,7 +1,7 @@
 <div align="center">
 
   <h1>HK2 Magento PHP 8.3 FPM</h1>
-  <b>PHP 8.3 FPM Docker environment specifically optimized for Magento 2.4.8</b><br><br>
+  <b>PHP 8.3 FPM Docker environment specifically optimized for Magento 2.4.8 and above.</b><br><br>
 
   <img src="https://img.shields.io/badge/version-2.1-blue?style=flat-square" alt="Version">
   <img src="https://img.shields.io/badge/Magento-2.4.8-blue?style=flat-square" alt="Magento Version">
@@ -19,7 +19,7 @@
 
 ## 📄 Overview
 
-The HK2 Magento PHP 8.3 FPM project provides a highly optimized, fully configured PHP 8.3 FPM Docker image specifically designed to run Magento 2.4.8 environments. It includes all necessary PHP extensions, Composer 2.x, IonCube loaders (with automatic architecture detection for Mac compatibility), and built-in MSMTP support for email routing.
+The HK2 Magento PHP 8.3 FPM project provides a highly optimized, fully configured PHP 8.3 FPM Docker image specifically designed to run Magento 2.4.6 and above environments. It includes all necessary PHP extensions, Composer 2.x, IonCube loaders (with automatic architecture detection for Mac compatibility), and built-in MSMTP support for email routing.
 
 ### 👥 Who is this for?
 
@@ -74,6 +74,8 @@ docker pull basantmandal/hk2-php8.3-fpm:latest
 
 Add the following service to your `docker-compose.yml`:
 
+> Remember - /php/conf.d/99-custom.ini is not added to the image, so you need to create the file in your local directory if you need it, else remove it from the docker-compose.yml file.
+
 ```yaml
 services:
   php:
@@ -96,8 +98,8 @@ If you need to build the image locally or modify configurations:
 **Clone the repository:**
 
 ```bash
-git clone https://github.com/basantmandal/docker-magento2-php83.git
-cd docker-magento2-php83
+git clone https://github.com/basantmandal/docker-magento2-php82.git
+cd docker-magento2-php82
 ```
 
 **Build the image locally (no cache):**
@@ -170,7 +172,7 @@ We actively welcome contributions! Please read our [Contributing Guidelines](./.
 
 ## 📄 License
 
-This project is licensed under the OSL 3.0 License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the OSL 3.0 License. See the [LICENSE.txt](LICENSE.txt) file for details.
 
 ---
 
@@ -186,7 +188,7 @@ The author provides this Docker image "as is" without any warranties. Users are 
 
   <a href="https://www.basantmandal.in/"><img src="https://img.shields.io/badge/Website-000?style=flat-square&logo=ko-fi&logoColor=white" alt="Website"></a>
   <a href="https://www.linkedin.com/in/basantmandal/"><img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
-<a href="mailto:support@basantmanda.in">
+<a href="mailto:support@basantmandal.in">
     <img src="https://img.shields.io/badge/Email-support%40basantmandal.in-blue?style=flat-square&logo=gmail" alt="Email">
 </a>
   <br>
