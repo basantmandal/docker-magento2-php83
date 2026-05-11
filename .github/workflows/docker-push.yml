@@ -38,7 +38,6 @@ jobs:
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=sha-
 
       # 6. Build + Push (MULTI-ARCH)
       - name: Build and push Docker image
@@ -51,4 +50,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=php83
-          cache-to: type=gha,mode=max,scope=php83
+          cache-to: ${{ github.ref == 'refs/heads/main' && '' || 'type=gha,mode=min,scope=php83' }}
