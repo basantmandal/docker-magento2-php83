@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-IMAGE="basantmandal/hk2-php8.3-fpm:2.0"
+IMAGE="basantmandal/hk2-php8.3-fpm:2.1.0"
 CONTAINER="php-test-container"
 
 echo "🧹 Cleanup old container..."
@@ -48,7 +48,7 @@ pass "All required extensions loaded"
 # 3. Config Validation
 # -----------------------------
 MEMORY=$(docker exec $CONTAINER php -r "echo ini_get('memory_limit');")
-[[ "$MEMORY" == "2048M" ]] || fail "memory_limit incorrect ($MEMORY)"
+[[ "$MEMORY" == "4096M" ]] || fail "memory_limit incorrect ($MEMORY)"
 pass "memory_limit OK"
 
 # -----------------------------
@@ -60,7 +60,7 @@ pass "IonCube loaded"
 # -----------------------------
 # 5. Composer Check
 # -----------------------------
-docker exec $CONTAINER composer --version | grep -q "1.10" || fail "Composer v1 missing"
+docker exec $CONTAINER composer --version | grep -q "^Composer version 2" || fail "Composer v2 missing"
 pass "Composer OK"
 
 # -----------------------------
