@@ -3,12 +3,12 @@ FROM php:8.3-fpm-bookworm
 LABEL org.opencontainers.image.title="HK2 Magento PHP 8.3 FPM" \
       org.opencontainers.image.description="PHP 8.3 FPM environment optimized for Magento 2" \
       org.opencontainers.image.source="https://github.com/basantmandal/docker-magento2-php83" \
-      org.opencontainers.image.version="2.1" \
+      org.opencontainers.image.version="2.2" \
       org.opencontainers.image.authors="Basant Mandal" \
       org.opencontainers.image.url="https://github.com/basantmandal/docker-magento2-php83" \
       org.opencontainers.image.documentation="https://github.com/basantmandal/docker-magento2-php83#readme" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.created="2026-05-11T00:00:00Z" \
+      org.opencontainers.image.created="2026-05-12T00:00:00Z" \
       org.opencontainers.image.revision="git-commit-sha"
 
 USER root
@@ -72,6 +72,7 @@ RUN set -eux; \
         calendar \
         curl \
         exif \
+        ftp \
         gd \
         intl \
         mysqli \
