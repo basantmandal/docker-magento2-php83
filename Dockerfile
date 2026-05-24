@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxslt1-dev \
     libbz2-dev \
     libsqlite3-dev \
+    libxml2-utils \
     zlib1g-dev \
     default-libmysqlclient-dev \
     jpegoptim optipng pngquant gifsicle \
