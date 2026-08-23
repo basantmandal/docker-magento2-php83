@@ -1,0 +1,7 @@
+# Exclude development files from composer distribution
+dev/ export-ignore
+scripts/ export-ignore
+
+# Exclude project scripts from GitHub language stats
+scripts/** linguist-documentation
+dev/** linguist-documentation
